@@ -1,4 +1,4 @@
-import 'package:acad_calculator/screens/form/form_main.dart';
+import 'package:acad_calculator/screens/form/acad_form_starter.dart';
 import 'package:acad_calculator/screens/welcome_screen.dart';
 import 'package:flutter/material.dart';
 
@@ -16,7 +16,7 @@ class MyApp extends StatelessWidget {
       initialRoute: '/',
       routes: {
         '/': (context) => WelcomeScreen(),
-        '/acad_form': (context) => AcadForm(),
+        '/acad_form': (context) => AcadFormStarter(),
       },
     );
   }
