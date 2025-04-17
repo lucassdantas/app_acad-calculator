@@ -1,32 +1,26 @@
 import 'package:flutter/material.dart';
 
 class AcadForm extends StatefulWidget {
-  final BuildContext context;
-  final int currentStep;
-  final int currentSubstep;
-  const AcadForm({
-    super.key,
-    required this.context,
-    required this.currentStep,
-    required this.currentSubstep,
-  });
+  const AcadForm({super.key});
 
   @override
   State<AcadForm> createState() => _AcadFormState();
 }
 
 class _AcadFormState extends State<AcadForm> {
+  int currentStep = 0;
+  int currentSubstep = 0;
+
   final Map<int, Map<int, Widget>> formStepsWidgets = {
     0: {
       0: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Título do Passo 0 - Subpasso 0',
+            'Como se chama a sua academia?',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const TextField(decoration: InputDecoration(labelText: 'Input 1')),
-          const TextField(decoration: InputDecoration(labelText: 'Input 2')),
         ],
       ),
     },
@@ -42,8 +36,38 @@ class _AcadFormState extends State<AcadForm> {
     },
   };
 
+  void stepController() {
+    setState(() {
+      currentStep++;
+    });
+
+    print(currentStep);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return const Placeholder();
+    final Widget? currentWidget =
+        formStepsWidgets[currentStep]?[currentSubstep];
+
+    return Column(
+      children: [
+        if (currentWidget != null)
+          currentWidget
+        else
+          const Text('Etapa não encontrada'),
+        const SizedBox(height: 20),
+        ElevatedButton.icon(
+          label: const Text('Próximo'),
+          onPressed: () {
+            stepController();
+          },
+          icon: const Icon(Icons.arrow_outward),
+          iconAlignment: IconAlignment.end,
+          style: const ButtonStyle(
+            backgroundColor: WidgetStatePropertyAll(Colors.yellow),
+          ),
+        ),
+      ],
+    );
   }
 }

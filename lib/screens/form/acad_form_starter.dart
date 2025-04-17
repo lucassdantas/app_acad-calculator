@@ -28,11 +28,7 @@ class _AcadFormStarterState extends State<AcadFormStarter> {
           },
         ),
       ),
-      body: AcadForm(
-        context: context,
-        currentStep: currentStep,
-        currentSubstep: currentSubstep,
-      ),
+      body: AcadForm(),
     );
   }
 }
