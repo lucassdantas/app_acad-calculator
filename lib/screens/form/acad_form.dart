@@ -36,11 +36,22 @@ class _AcadFormState extends State<AcadForm> {
     },
   };
 
-  void stepController() {
-    setState(() {
-      currentStep++;
-    });
-
+  void stepController(int amountToHandle) {
+    if (formStepsWidgets[currentStep]?.containsKey(
+          currentSubstep + amountToHandle,
+        ) ??
+        false) {
+      return setState(() => currentSubstep += amountToHandle);
+    }
+    if (formStepsWidgets.containsKey(currentStep + amountToHandle)) {
+      return setState(() => currentStep += amountToHandle);
+    }
+    if (currentStep + amountToHandle < 0) {
+      return Navigator.pop(context);
+    }
+    if (currentStep + amountToHandle > (formStepsWidgets.length - 1)) {
+      Navigator.pushNamed(context, '/end_screen');
+    }
     print(currentStep);
   }
 
@@ -49,25 +60,37 @@ class _AcadFormState extends State<AcadForm> {
     final Widget? currentWidget =
         formStepsWidgets[currentStep]?[currentSubstep];
 
-    return Column(
-      children: [
-        if (currentWidget != null)
-          currentWidget
-        else
-          const Text('Etapa não encontrada'),
-        const SizedBox(height: 20),
-        ElevatedButton.icon(
-          label: const Text('Próximo'),
+    return Scaffold(
+      appBar: AppBar(
+        title: Image.asset('assets/acad-logo.png'),
+        leading: IconButton(
+          icon: Icon(Icons.arrow_circle_left_rounded),
           onPressed: () {
-            stepController();
+            stepController(-1);
           },
-          icon: const Icon(Icons.arrow_outward),
-          iconAlignment: IconAlignment.end,
-          style: const ButtonStyle(
-            backgroundColor: WidgetStatePropertyAll(Colors.yellow),
-          ),
         ),
-      ],
+      ),
+      body: Column(
+        children: [
+          if (currentWidget != null)
+            currentWidget
+          else
+            const Text('Etapa não encontrada'),
+          const SizedBox(height: 20),
+          ElevatedButton.icon(
+            label: const Text('Próximo'),
+            onPressed: () {
+              stepController(1);
+            },
+            icon: const Icon(Icons.arrow_outward),
+            iconAlignment: IconAlignment.end,
+            style: const ButtonStyle(
+              backgroundColor: WidgetStatePropertyAll(Colors.yellow),
+            ),
+          ),
+          //
+        ],
+      ),
     );
   }
 }
