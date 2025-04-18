@@ -17,7 +17,7 @@ class _AcadFormState extends State<AcadForm> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           const Text(
-            'Como se chama a sua academia?',
+            'Etapa 1 substep 1',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
           ),
           const TextField(decoration: InputDecoration(labelText: 'Input 1')),
@@ -27,9 +27,43 @@ class _AcadFormState extends State<AcadForm> {
     1: {
       0: Column(
         children: [
-          const Text('Outro título aqui'),
+          const Text('Etapa 2 substep 1'),
           const TextField(
             decoration: InputDecoration(labelText: 'Outro input'),
+          ),
+        ],
+      ),
+      1: Column(
+        children: [
+          const Text('Etapa 2 substep 2'),
+          const TextField(
+            decoration: InputDecoration(labelText: 'Outro input'),
+          ),
+        ],
+      ),
+    },
+    2: {
+      0: Column(
+        children: [
+          const Text('Etapa 3 substep 1'),
+          const TextField(
+            decoration: InputDecoration(labelText: 'Outro input 2'),
+          ),
+          const TextField(
+            decoration: InputDecoration(labelText: 'Outro input 2'),
+          ),
+        ],
+      ),
+    },
+    3: {
+      0: Column(
+        children: [
+          const Text('Etapa 4 substep 1'),
+          const TextField(
+            decoration: InputDecoration(labelText: 'Outro input 2'),
+          ),
+          const TextField(
+            decoration: InputDecoration(labelText: 'Outro input 2'),
           ),
         ],
       ),
@@ -44,13 +78,17 @@ class _AcadFormState extends State<AcadForm> {
       return setState(() => currentSubstep += amountToHandle);
     }
     if (formStepsWidgets.containsKey(currentStep + amountToHandle)) {
+      setState(() => currentSubstep = 0);
       return setState(() => currentStep += amountToHandle);
     }
     if (currentStep + amountToHandle < 0) {
+      setState(() => currentStep = 0);
+      setState(() => currentSubstep = 0);
       return Navigator.pop(context);
     }
     if (currentStep + amountToHandle > (formStepsWidgets.length - 1)) {
       Navigator.pushNamed(context, '/end_screen');
+      return;
     }
     print(currentStep);
   }
