@@ -1,5 +1,6 @@
 import 'package:acad_calculator/entities/brazilian_state.dart';
 import 'package:acad_calculator/entities/search_states_and_cities.dart';
+import 'package:acad_calculator/functions/send_email.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
@@ -14,12 +15,23 @@ class _AcadFormState extends State<AcadForm> {
   int currentStep = 0;
   int currentSubstep = 0;
   final TextEditingController academyNameController = TextEditingController();
-  final TextEditingController academyQuantityController = TextEditingController();
-  final TextEditingController academyBilling = TextEditingController();
-
-  List<BrazilianState> estados = [];
   String? ufSelecionada;
   String? cidadeSelecionada;
+
+  final TextEditingController academyQuantityController = TextEditingController();
+  final TextEditingController academyBillingController = TextEditingController();
+  final TextEditingController ecadBillingController = TextEditingController();
+  final TextEditingController lightBillingController = TextEditingController();
+  final TextEditingController traineeBillingController = TextEditingController();
+  final TextEditingController lawyerBillingController = TextEditingController();
+
+  final TextEditingController userNameController = TextEditingController();
+  final TextEditingController userEmailController = TextEditingController();
+  final TextEditingController userWhatsappController = TextEditingController();
+
+  final int economyWithAcad = 0;
+
+  List<BrazilianState> estados = [];
 
   @override
   void initState() {
@@ -102,44 +114,52 @@ class _AcadFormState extends State<AcadForm> {
         0: Column(
           children: [
             Text('Qual o faturamento da ${academyNameController.text}'),
-            TextField(decoration: InputDecoration(labelText: 'Faturamento')),
+            TextField(
+              controller: academyBillingController,
+              decoration: InputDecoration(labelText: 'Faturamento'),
+            ),
           ],
         ),
         1: Column(
           children: [
-            const Text('Quanto você paga de ECAD?'),
-            const TextField(decoration: InputDecoration(labelText: 'Valor')),
+            Text('Quanto você paga de ECAD?'),
+            TextField(controller: ecadBillingController, decoration: InputDecoration(labelText: 'Valor')),
           ],
         ),
         2: Column(
           children: [
             Text('Quanto a ${academyNameController.text} gasta de energia em média por mês?'),
-            TextField(decoration: InputDecoration(labelText: 'Valor')),
+            TextField(controller: lightBillingController, decoration: InputDecoration(labelText: 'Valor')),
           ],
         ),
         3: Column(
           children: [
             Text('Quanto paga por seguro estagiário?'),
-            TextField(decoration: InputDecoration(labelText: 'Valor')),
+            TextField(controller: traineeBillingController, decoration: InputDecoration(labelText: 'Valor')),
           ],
         ),
         4: Column(
           children: [
             Text('Quanto paga de advogado?'),
-            TextField(decoration: InputDecoration(labelText: 'Valor')),
+            TextField(controller: lawyerBillingController, decoration: InputDecoration(labelText: 'Valor')),
           ],
         ),
       },
       2: {
         0: Column(
           children: [
-            const TextField(
+            TextField(
+              controller: userNameController,
               decoration: InputDecoration(labelText: 'Como se chama?', hintText: 'Nome sobrenome'),
             ),
-            const TextField(
+            TextField(
+              controller: userEmailController,
               decoration: InputDecoration(labelText: 'Seu e-mail', hintText: 'email@email.com.br'),
             ),
-            const TextField(decoration: InputDecoration(labelText: 'Whatsapp', hintText: '(00)00000-0000')),
+            TextField(
+              controller: userWhatsappController,
+              decoration: InputDecoration(labelText: 'Whatsapp', hintText: '(00)00000-0000'),
+            ),
           ],
         ),
       },
@@ -171,9 +191,52 @@ class _AcadFormState extends State<AcadForm> {
       return Navigator.pop(context);
     }
     if (currentStep + amountToHandle > (buildFormStepsWidgets().length - 1)) {
+      fillEmailDataAndSendEmail();
+      calculateEconomy();
       Navigator.pushNamed(context, '/end_screen');
       return;
     }
+  }
+
+  void calculateEconomy() {}
+  void fillEmailDataAndSendEmail() async {
+    final academyName = academyNameController.text;
+    final city = cidadeSelecionada ?? '';
+    final state = ufSelecionada ?? '';
+    final unitCount = academyQuantityController.text;
+    final totalBilling = academyBillingController.text;
+    final ecad = ecadBillingController.text;
+    final electricity = lightBillingController.text;
+    final traineeInsurance = traineeBillingController.text;
+    final lawyer = lawyerBillingController.text;
+
+    final userName = userNameController.text;
+    final userEmail = userEmailController.text;
+    final userWhatsapp = userWhatsappController.text;
+
+    final emailBody = '''
+      Nova submissão do formulário da calculadora:
+
+      🏋️ Academia: $academyName
+      📍 Localização: $city - $state
+      🏢 Unidades: $unitCount
+
+      💰 Faturamento total: $totalBilling
+
+      Gastos mensais:
+      🎵 ECAD: $ecad
+      💡 Energia: $electricity
+      👨‍🎓 Seguro estagiário: $traineeInsurance
+      ⚖️ Advogado: $lawyer
+
+      Economia total: $economyWithAcad
+      👤 Informações do responsável:
+      Nome: $userName
+      E-mail: $userEmail
+      WhatsApp: $userWhatsapp
+      ''';
+
+    await sendEmail(subject: 'Nova submissão - $academyName', body: emailBody);
   }
 
   @override
@@ -203,7 +266,6 @@ class _AcadFormState extends State<AcadForm> {
             iconAlignment: IconAlignment.end,
             style: const ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.yellow)),
           ),
-          //
         ],
       ),
     );
