@@ -1,4 +1,7 @@
+import 'package:acad_calculator/entities/brazilian_state.dart';
+import 'package:acad_calculator/entities/search_states_and_cities.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class AcadForm extends StatefulWidget {
   const AcadForm({super.key});
@@ -11,8 +14,22 @@ class _AcadFormState extends State<AcadForm> {
   int currentStep = 0;
   int currentSubstep = 0;
   final TextEditingController academyNameController = TextEditingController();
-  final TextEditingController ufController = TextEditingController();
-  final TextEditingController cityController = TextEditingController();
+  final TextEditingController academyQuantityController = TextEditingController();
+  final TextEditingController academyBilling = TextEditingController();
+
+  List<BrazilianState> estados = [];
+  String? ufSelecionada;
+  String? cidadeSelecionada;
+
+  @override
+  void initState() {
+    super.initState();
+    carregarEstadosECidades().then((dados) {
+      setState(() {
+        estados = dados;
+      });
+    });
+  }
 
   Map<int, Map<int, Widget>> buildFormStepsWidgets() {
     return {
@@ -20,10 +37,7 @@ class _AcadFormState extends State<AcadForm> {
         0: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              'Como se chama sua academia?',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            Text('Como se chama sua academia?', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
             TextField(
               controller: academyNameController,
               decoration: const InputDecoration(labelText: 'Minha academia'),
@@ -37,59 +51,95 @@ class _AcadFormState extends State<AcadForm> {
               'Onde fica a ${academyNameController.text}',
               style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
             ),
-            TextField(
-              controller: ufController,
-              decoration: InputDecoration(labelText: 'UF'),
+            DropdownButtonFormField<String>(
+              value: ufSelecionada,
+              decoration: const InputDecoration(labelText: 'UF'),
+              items:
+                  estados.map((estado) {
+                    return DropdownMenuItem(value: estado.acronym, child: Text(estado.acronym));
+                  }).toList(),
+              onChanged: (String? newUf) {
+                setState(() {
+                  ufSelecionada = newUf;
+                  cidadeSelecionada = null;
+                });
+              },
             ),
+            const SizedBox(height: 12),
+            DropdownButtonFormField<String>(
+              value: cidadeSelecionada,
+              decoration: const InputDecoration(labelText: 'Cidade'),
+              items:
+                  (estados
+                      .firstWhere(
+                        (e) => e.acronym == ufSelecionada,
+                        orElse: () => BrazilianState(acronym: '', name: '', cities: []),
+                      )
+                      .cities
+                      .map((city) => DropdownMenuItem(value: city, child: Text(city)))
+                      .toList()),
+              onChanged: (String? newCity) {
+                setState(() {
+                  cidadeSelecionada = newCity;
+                });
+              },
+            ),
+          ],
+        ),
+        2: Column(
+          children: [
+            Text('Quantas unidades a ${academyNameController.text} tem?'),
             TextField(
-              controller: cityController,
-              decoration: InputDecoration(labelText: 'Selecione uma cidade'),
+              controller: academyQuantityController,
+              keyboardType: TextInputType.number,
+              inputFormatters: <TextInputFormatter>[FilteringTextInputFormatter.digitsOnly],
+              decoration: const InputDecoration(labelText: 'Número de unidades'),
             ),
           ],
         ),
       },
-      // Outras etapas iguais
       1: {
         0: Column(
           children: [
-            const Text('Etapa 2 substep 1'),
-            const TextField(
-              decoration: InputDecoration(labelText: 'Outro input'),
-            ),
+            Text('Qual o faturamento da ${academyNameController.text}'),
+            TextField(decoration: InputDecoration(labelText: 'Faturamento')),
           ],
         ),
         1: Column(
           children: [
-            const Text('Etapa 2 substep 2'),
-            const TextField(
-              decoration: InputDecoration(labelText: 'Outro input'),
-            ),
+            const Text('Quanto você paga de ECAD?'),
+            const TextField(decoration: InputDecoration(labelText: 'Valor')),
+          ],
+        ),
+        2: Column(
+          children: [
+            Text('Quanto a ${academyNameController.text} gasta de energia em média por mês?'),
+            TextField(decoration: InputDecoration(labelText: 'Valor')),
+          ],
+        ),
+        3: Column(
+          children: [
+            Text('Quanto paga por seguro estagiário?'),
+            TextField(decoration: InputDecoration(labelText: 'Valor')),
+          ],
+        ),
+        4: Column(
+          children: [
+            Text('Quanto paga de advogado?'),
+            TextField(decoration: InputDecoration(labelText: 'Valor')),
           ],
         ),
       },
       2: {
         0: Column(
           children: [
-            const Text('Etapa 3 substep 1'),
             const TextField(
-              decoration: InputDecoration(labelText: 'Outro input 2'),
+              decoration: InputDecoration(labelText: 'Como se chama?', hintText: 'Nome sobrenome'),
             ),
             const TextField(
-              decoration: InputDecoration(labelText: 'Outro input 2'),
+              decoration: InputDecoration(labelText: 'Seu e-mail', hintText: 'email@email.com.br'),
             ),
-          ],
-        ),
-      },
-      3: {
-        0: Column(
-          children: [
-            const Text('Etapa 4 substep 1'),
-            const TextField(
-              decoration: InputDecoration(labelText: 'Outro input 2'),
-            ),
-            const TextField(
-              decoration: InputDecoration(labelText: 'Outro input 2'),
-            ),
+            const TextField(decoration: InputDecoration(labelText: 'Whatsapp', hintText: '(00)00000-0000')),
           ],
         ),
       },
@@ -108,10 +158,7 @@ class _AcadFormState extends State<AcadForm> {
   }
 
   void stepController(int amountToHandle) {
-    if (buildFormStepsWidgets()[currentStep]?.containsKey(
-          currentSubstep + amountToHandle,
-        ) ??
-        false) {
+    if (buildFormStepsWidgets()[currentStep]?.containsKey(currentSubstep + amountToHandle) ?? false) {
       return setState(() => currentSubstep += amountToHandle);
     }
     if (buildFormStepsWidgets().containsKey(currentStep + amountToHandle)) {
@@ -127,13 +174,11 @@ class _AcadFormState extends State<AcadForm> {
       Navigator.pushNamed(context, '/end_screen');
       return;
     }
-    print(currentStep);
   }
 
   @override
   Widget build(BuildContext context) {
-    final Widget? currentWidget =
-        buildFormStepsWidgets()[currentStep]?[currentSubstep];
+    final Widget? currentWidget = buildFormStepsWidgets()[currentStep]?[currentSubstep];
 
     return Scaffold(
       appBar: AppBar(
@@ -147,10 +192,7 @@ class _AcadFormState extends State<AcadForm> {
       ),
       body: Column(
         children: [
-          if (currentWidget != null)
-            currentWidget
-          else
-            const Text('Etapa não encontrada'),
+          if (currentWidget != null) currentWidget else const Text('Etapa não encontrada'),
           const SizedBox(height: 20),
           ElevatedButton.icon(
             label: const Text('Próximo'),
@@ -159,9 +201,7 @@ class _AcadFormState extends State<AcadForm> {
             },
             icon: const Icon(Icons.arrow_outward),
             iconAlignment: IconAlignment.end,
-            style: const ButtonStyle(
-              backgroundColor: WidgetStatePropertyAll(Colors.yellow),
-            ),
+            style: const ButtonStyle(backgroundColor: WidgetStatePropertyAll(Colors.yellow)),
           ),
           //
         ],
