@@ -10,74 +10,111 @@ class AcadForm extends StatefulWidget {
 class _AcadFormState extends State<AcadForm> {
   int currentStep = 0;
   int currentSubstep = 0;
+  final TextEditingController academyNameController = TextEditingController();
+  final TextEditingController ufController = TextEditingController();
+  final TextEditingController cityController = TextEditingController();
 
-  final Map<int, Map<int, Widget>> formStepsWidgets = {
-    0: {
-      0: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          const Text(
-            'Etapa 1 substep 1',
-            style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-          ),
-          const TextField(decoration: InputDecoration(labelText: 'Input 1')),
-        ],
-      ),
-    },
-    1: {
-      0: Column(
-        children: [
-          const Text('Etapa 2 substep 1'),
-          const TextField(
-            decoration: InputDecoration(labelText: 'Outro input'),
-          ),
-        ],
-      ),
-      1: Column(
-        children: [
-          const Text('Etapa 2 substep 2'),
-          const TextField(
-            decoration: InputDecoration(labelText: 'Outro input'),
-          ),
-        ],
-      ),
-    },
-    2: {
-      0: Column(
-        children: [
-          const Text('Etapa 3 substep 1'),
-          const TextField(
-            decoration: InputDecoration(labelText: 'Outro input 2'),
-          ),
-          const TextField(
-            decoration: InputDecoration(labelText: 'Outro input 2'),
-          ),
-        ],
-      ),
-    },
-    3: {
-      0: Column(
-        children: [
-          const Text('Etapa 4 substep 1'),
-          const TextField(
-            decoration: InputDecoration(labelText: 'Outro input 2'),
-          ),
-          const TextField(
-            decoration: InputDecoration(labelText: 'Outro input 2'),
-          ),
-        ],
-      ),
-    },
-  };
+  Map<int, Map<int, Widget>> buildFormStepsWidgets() {
+    return {
+      0: {
+        0: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Como se chama sua academia?',
+              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            TextField(
+              controller: academyNameController,
+              decoration: const InputDecoration(labelText: 'Minha academia'),
+            ),
+          ],
+        ),
+        1: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              'Onde fica a ${academyNameController.text}',
+              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+            ),
+            TextField(
+              controller: ufController,
+              decoration: InputDecoration(labelText: 'UF'),
+            ),
+            TextField(
+              controller: cityController,
+              decoration: InputDecoration(labelText: 'Selecione uma cidade'),
+            ),
+          ],
+        ),
+      },
+      // Outras etapas iguais
+      1: {
+        0: Column(
+          children: [
+            const Text('Etapa 2 substep 1'),
+            const TextField(
+              decoration: InputDecoration(labelText: 'Outro input'),
+            ),
+          ],
+        ),
+        1: Column(
+          children: [
+            const Text('Etapa 2 substep 2'),
+            const TextField(
+              decoration: InputDecoration(labelText: 'Outro input'),
+            ),
+          ],
+        ),
+      },
+      2: {
+        0: Column(
+          children: [
+            const Text('Etapa 3 substep 1'),
+            const TextField(
+              decoration: InputDecoration(labelText: 'Outro input 2'),
+            ),
+            const TextField(
+              decoration: InputDecoration(labelText: 'Outro input 2'),
+            ),
+          ],
+        ),
+      },
+      3: {
+        0: Column(
+          children: [
+            const Text('Etapa 4 substep 1'),
+            const TextField(
+              decoration: InputDecoration(labelText: 'Outro input 2'),
+            ),
+            const TextField(
+              decoration: InputDecoration(labelText: 'Outro input 2'),
+            ),
+          ],
+        ),
+      },
+    };
+  }
+
+  void formController(amountToHandle) {
+    handleValueBySteps();
+    stepController(amountToHandle);
+  }
+
+  void handleValueBySteps() {
+    if (currentStep == 0 && currentSubstep == 0) {
+      //setState(() => academyName = '');
+    }
+  }
 
   void stepController(int amountToHandle) {
-    if (formStepsWidgets[currentStep]?.containsKey(
+    if (buildFormStepsWidgets()[currentStep]?.containsKey(
           currentSubstep + amountToHandle,
         ) ??
         false) {
       return setState(() => currentSubstep += amountToHandle);
     }
-    if (formStepsWidgets.containsKey(currentStep + amountToHandle)) {
+    if (buildFormStepsWidgets().containsKey(currentStep + amountToHandle)) {
       setState(() => currentSubstep = 0);
       return setState(() => currentStep += amountToHandle);
     }
@@ -86,7 +123,7 @@ class _AcadFormState extends State<AcadForm> {
       setState(() => currentSubstep = 0);
       return Navigator.pop(context);
     }
-    if (currentStep + amountToHandle > (formStepsWidgets.length - 1)) {
+    if (currentStep + amountToHandle > (buildFormStepsWidgets().length - 1)) {
       Navigator.pushNamed(context, '/end_screen');
       return;
     }
@@ -96,7 +133,7 @@ class _AcadFormState extends State<AcadForm> {
   @override
   Widget build(BuildContext context) {
     final Widget? currentWidget =
-        formStepsWidgets[currentStep]?[currentSubstep];
+        buildFormStepsWidgets()[currentStep]?[currentSubstep];
 
     return Scaffold(
       appBar: AppBar(
@@ -104,7 +141,7 @@ class _AcadFormState extends State<AcadForm> {
         leading: IconButton(
           icon: Icon(Icons.arrow_circle_left_rounded),
           onPressed: () {
-            stepController(-1);
+            formController(-1);
           },
         ),
       ),
@@ -118,7 +155,7 @@ class _AcadFormState extends State<AcadForm> {
           ElevatedButton.icon(
             label: const Text('Próximo'),
             onPressed: () {
-              stepController(1);
+              formController(1);
             },
             icon: const Icon(Icons.arrow_outward),
             iconAlignment: IconAlignment.end,
